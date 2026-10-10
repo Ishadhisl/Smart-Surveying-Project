@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  pgsql:
+    image: postgis/postgis:16-3.4
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: survey_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pgsql_data:/var/lib/postgresql/data
+
+volumes:
+  pgsql_data:
