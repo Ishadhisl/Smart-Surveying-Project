@@ -14,13 +14,13 @@ use App\Services\WeatherService;
 Schedule::call(function () {
     $upcomingVisits = Survey::whereNotNull('scheduled_at')
         ->where('scheduled_at', '>', now())
-        ->where('scheduled_at', '<', now()->addDays(16))
+        ->where('scheduled_at', '<=', now()->addDays(7))
         ->get();
 
     $weatherService = app(WeatherService::class);
     foreach ($upcomingVisits as $visit) {
         if ($visit->location_lat && $visit->location_lng) {
-            $weatherService->getWeather($visit->location_lat, $visit->location_lng, $visit->scheduled_at);
+            $weatherService->getWeatherForDate((float) $visit->location_lat, (float) $visit->location_lng, $visit->scheduled_at);
         }
     }
 })->daily();

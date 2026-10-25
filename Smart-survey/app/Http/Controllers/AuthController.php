@@ -19,89 +19,121 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $loginRole = $request->input('login_role', 'client');
+        $request->validate([
+            'email'    => 'required|string',
+            'password' => 'required|string',
+        ]);
 
-        if ($loginRole === 'surveyor') {
-            // Surveyor: Login via License Number + Password
-            $request->validate([
-                'license_number' => 'required|string',
-                'password'       => 'required|string',
-            ]);
+        $loginInput = trim($request->input('email'));
 
-            $user = User::where('license_number', $request->license_number)
-                        ->where('role', 'admin')
-                        ->first();
+        // Allow login using either Email or Surveyor License Number seamlessly
+        $user = User::where('email', $loginInput)
+                    ->orWhere('license_number', $loginInput)
+                    ->first();
 
-            if (!$user || !Hash::check($request->password, $user->password)) {
-                return back()->withErrors([
-                    'license_number' => 'Invalid License Number or password. Please try again.',
-                ])->withInput();
-            }
-
-            Auth::login($user);
-            $request->session()->regenerate();
-            return redirect()->intended('/admin/dashboard');
-
-        } else {
-            // Client: Login via Email + Password
-            $request->validate([
-                'email'    => 'required|email',
-                'password' => 'required|string',
-            ]);
-
-            $user = User::where('email', $request->email)
-                        ->where('role', 'client')
-                        ->first();
-
-            if (!$user || !Hash::check($request->password, $user->password)) {
-                return back()->withErrors([
-                    'email' => 'Email or password is incorrect. Please try again.',
-                ])->withInput();
-            }
-
-            Auth::login($user);
-            $request->session()->regenerate();
-            return redirect()->intended('/');
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return back()->withErrors([
+                'email' => 'Invalid credentials. Please verify your email/license number and password.',
+            ])->withInput($request->only('email'));
         }
+
+        // Check professional verification for surveyors with automatic registry check
+        if ($user->role === 'admin' && !$user->is_approved) {
+            $verificationService = app(\App\Services\SurveyorVerificationService::class);
+            $verification = $verificationService->verify($user->license_number ?? '', $user->name);
+
+            if ($verification['valid']) {
+                $user->update([
+                    'is_approved'    => true,
+                    'license_number' => $verification['license_number'],
+                ]);
+            } else {
+                return back()->withErrors([
+                    'email' => 'Your surveyor account could not be verified automatically: ' . $verification['message'],
+                ])->withInput($request->only('email'));
+            }
+        }
+
+        Auth::login($user, $request->boolean('remember'));
+        $request->session()->regenerate();
+
+        if ($user->role === 'admin') {
+            return redirect()->intended('/admin/dashboard');
+        }
+
+        return redirect()->intended('/');
     }
 
     public function showRegister(Request $request)
     {
-        $role = $request->get('role', 'client');
+        $role = $request->query('role', 'client');
+        if (!in_array($role, ['client', 'surveyor'])) {
+            $role = 'client';
+        }
+
         return view('auth.register', compact('role'));
     }
 
     public function register(Request $request)
     {
+        $role = $request->input('role', 'client');
+        $isSurveyor = in_array($role, ['surveyor', 'admin']);
+
         $rules = [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:client,admin',
+            'name'            => 'required|string|max:255',
+            'email'           => 'required|string|email|max:255|unique:users,email',
+            'password'        => 'required|string|min:8|confirmed',
             'whatsapp_number' => 'required|string|max:20',
         ];
 
-        if ($request->role === 'admin') {
-            $rules['license_number'] = 'required|string|unique:users';
+        if ($isSurveyor) {
+            $rules['license_number'] = 'required|string|max:50|unique:users,license_number';
         }
 
         $validated = $request->validate($rules);
 
+        if ($isSurveyor) {
+            // Automated Registry Verification
+            $verificationService = app(\App\Services\SurveyorVerificationService::class);
+            $verification = $verificationService->verify($validated['license_number'], $validated['name']);
+
+            if (!$verification['valid']) {
+                return back()->withErrors([
+                    'license_number' => $verification['message'],
+                ])->withInput($request->except('password', 'password_confirmation'));
+            }
+
+            // Successfully Verified against Land Survey Council - Automatic Approval & Instant Access!
+            $user = User::create([
+                'name'            => $validated['name'],
+                'email'           => $validated['email'],
+                'password'        => Hash::make($validated['password']),
+                'role'            => 'admin', // Internal surveyor role
+                'license_number'  => $verification['license_number'],
+                'whatsapp_number' => $validated['whatsapp_number'],
+                'language'        => app()->getLocale(),
+                'is_approved'     => true, // Automatically approved via official registry verification!
+            ]);
+
+            Auth::login($user);
+            $request->session()->regenerate();
+
+            return redirect()->intended('/admin/dashboard')->with('success', 'Official Surveyor License (' . $verification['license_number'] . ') verified successfully! Welcome to your Surveyor Workspace.');
+        }
+
         $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => $validated['role'],
-            'license_number' => $validated['license_number'] ?? null,
+            'name'            => $validated['name'],
+            'email'           => $validated['email'],
+            'password'        => Hash::make($validated['password']),
+            'role'            => 'client',
+            'license_number'  => null,
             'whatsapp_number' => $validated['whatsapp_number'],
-            'language' => app()->getLocale(),
+            'language'        => app()->getLocale(),
+            'is_approved'     => true,
         ]);
 
         Auth::login($user);
 
-        if ($user->role === 'admin') {
-            return redirect('/admin/dashboard');
-        }
         return redirect('/');
     }
 

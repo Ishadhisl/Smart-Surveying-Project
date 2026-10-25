@@ -15,8 +15,8 @@ return [
     |
     */
 
-    'merchant_id'     => env('PAYHERE_MERCHANT_ID', '1228932'),      // PayHere sandbox test ID
-    'merchant_secret' => env('PAYHERE_MERCHANT_SECRET', 'YOUR_SECRET'),
+    'merchant_id'     => env('PAYHERE_MERCHANT_ID'),
+    'merchant_secret' => env('PAYHERE_MERCHANT_SECRET'),
     'sandbox'         => env('PAYHERE_SANDBOX', true),
 
     /*

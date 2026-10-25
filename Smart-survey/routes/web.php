@@ -34,10 +34,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/survey/{survey}/respond-schedule', [SurveyController::class, 'respondToSchedule'])->name('survey.respond');
 
     // Payment Routes
-    Route::get('/survey/{survey}/pay', [PaymentController::class, 'showPaymentPage'])->name('payment.page');
+    Route::get('/survey/{survey}/pay', [PaymentController::class, 'showPaymentPage'])->middleware('can:pay,survey')->name('payment.page');
     Route::post('/survey/{survey}/upload-slip', [PaymentController::class, 'uploadSlip'])->name('payment.slip');
     Route::get('/payment/return', [PaymentController::class, 'payHereReturn'])->name('payment.return');
     Route::get('/survey/{survey}/invoice', [SurveyController::class, 'downloadInvoice'])->name('survey.invoice');
+    Route::get('/survey/{survey}/documents/{type}', [\App\Http\Controllers\DocumentController::class, 'download'])->name('survey.document.download');
+    Route::post('/survey/{survey}/cancel', [SurveyController::class, 'cancel'])->name('survey.cancel');
 
     // Feedback Routes
     Route::get('/feedback', [FeedbackController::class, 'index'])->name('feedback.index');
@@ -52,10 +54,9 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/sessions', [SessionController::class, 'destroyOthers'])->name('sessions.destroyOthers');
 });
 
-// PayHere Server Notification (no CSRF)
-Route::post('/payment/notify', [PaymentController::class, 'payHereNotify'])
-    ->name('payment.notify')
-    ->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class);
+// PayHere Server Notification (no CSRF, both /payhere/notify and /payment/notify for backward compatibility)
+Route::post('/payhere/notify', [PaymentController::class, 'payhereNotify'])->name('payhere.notify');
+Route::post('/payment/notify', [PaymentController::class, 'payhereNotify'])->name('payment.notify');
 
 // Admin/Surveyor Routes (Protected + Role Check)
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
@@ -69,9 +70,28 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('/survey/{survey}/propose-schedule', [SurveyController::class, 'proposeSchedule'])->name('schedule.propose');
         Route::post('/survey/{survey}/mark-payment', [SurveyController::class, 'markPayment'])->name('payment.mark');
         Route::get('/weather-check', [SurveyController::class, 'checkWeather'])->name('weather.check');
+        Route::get('/survey/{survey}/weather-forecast', [SurveyController::class, 'weatherForecast'])->name('weather.forecast');
         Route::post('/survey/{survey}/boundary-points', [\App\Http\Controllers\BoundaryPointController::class, 'store'])->name('boundary.store');
+
+        // Cadastral Workspace Routes (Phase 4)
+        Route::get('/survey/{survey}/cadastral', [\App\Http\Controllers\CadastralController::class, 'workspace'])->name('cadastral');
+        Route::post('/survey/{survey}/cadastral/boundary', [\App\Http\Controllers\CadastralController::class, 'storeBoundary'])->name('cadastral.boundary.store');
+        Route::post('/survey/{survey}/cadastral/feature', [\App\Http\Controllers\CadastralController::class, 'storeFeature'])->name('cadastral.feature.store');
+        Route::delete('/survey/{survey}/cadastral/feature/{feature}', [\App\Http\Controllers\CadastralController::class, 'destroyFeature'])->name('cadastral.feature.destroy');
+        Route::get('/survey/{survey}/cadastral/boundary/{boundary}/export', [\App\Http\Controllers\CadastralController::class, 'exportBoundary'])->name('cadastral.boundary.export');
+        Route::get('/survey/{survey}/cadastral/boundary/{boundary}/export-csv', [\App\Http\Controllers\CadastralController::class, 'exportBoundaryCsv'])->name('cadastral.boundary.export-csv');
+
+        // Subdivision Tool Routes (Phase 5)
+        Route::get('/survey/{survey}/subdivision', [\App\Http\Controllers\SubdivisionController::class, 'workspace'])->name('subdivision');
+        Route::post('/survey/{survey}/subdivision/split', [\App\Http\Controllers\SubdivisionController::class, 'manualSplit'])->name('subdivision.split');
+        Route::post('/survey/{survey}/subdivision/recommend', [\App\Http\Controllers\SubdivisionController::class, 'recommend'])->name('subdivision.recommend');
+        Route::post('/survey/{survey}/subdivision/finalize', [\App\Http\Controllers\SubdivisionController::class, 'finalize'])->name('subdivision.finalize');
 
         // Admin Feedback Route
         Route::get('/feedbacks', [FeedbackController::class, 'adminIndex'])->name('feedbacks');
+
+        // Surveyor Professional Verification Approval Routes
+        Route::post('/surveyors/{user}/approve', [SurveyController::class, 'approveSurveyor'])->name('surveyors.approve');
+        Route::post('/surveyors/{user}/reject', [SurveyController::class, 'rejectSurveyor'])->name('surveyors.reject');
     });
 });

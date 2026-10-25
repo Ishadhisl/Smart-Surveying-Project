@@ -17,9 +17,11 @@ class SetLanguage
     {
         if ($request->has('lang')) {
             $lang = $request->get('lang');
-            session(['locale' => $lang]);
-            if (auth()->check()) {
-                auth()->user()->update(['language' => $lang]);
+            if (in_array($lang, ['en', 'si', 'ta'], true)) {
+                session(['locale' => $lang]);
+                if (auth()->check()) {
+                    auth()->user()->update(['language' => $lang]);
+                }
             }
         }
 

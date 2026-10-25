@@ -1,0 +1,1205 @@
+{
+ "_readme": "points[] is in DRAWING ORDER, same shape the boundary API receives (latitude/longitude). Expected values are geodesic (WGS84 ellipsoid) and verified independently of PostGIS. Group E (recommender) added: features carry clearance_m; assert on conflicts and area deviation, never on angles.",
+ "perch_m2": 25.29285264,
+ "acre_m2": 4046.8564224,
+ "cases": [
+  {
+   "id": "A1",
+   "group": "A_area_pricing",
+   "description": "100 m x 100 m square",
+   "points": [
+    {
+     "latitude": 7.2906,
+     "longitude": 80.6337
+    },
+    {
+     "latitude": 7.2906,
+     "longitude": 80.6346056
+    },
+    {
+     "latitude": 7.2915042,
+     "longitude": 80.6346056
+    },
+    {
+     "latitude": 7.2915042,
+     "longitude": 80.6337
+    }
+   ],
+   "expected": {
+    "area_sqm": 9999.99,
+    "perimeter_m": 400.0,
+    "perches": 395.368,
+    "acres": 2.4711,
+    "boundary_points": 4,
+    "estimate_rs_boundary_marking": 130100
+   },
+   "tolerance": "area/perimeter within 0.5% (geodesic vs your method); estimate within +-100 Rs (price is rounded to nearest 100, so 39.0 vs 38.999 perches can land on either side)"
+  },
+  {
+   "id": "A2",
+   "group": "A_area_pricing",
+   "description": "Exactly 20 perches rectangle (20 m x 25.2929 m)",
+   "points": [
+    {
+     "latitude": 7.2905999,
+     "longitude": 80.6427559
+    },
+    {
+     "latitude": 7.2905999,
+     "longitude": 80.642937
+    },
+    {
+     "latitude": 7.2908286,
+     "longitude": 80.642937
+    },
+    {
+     "latitude": 7.2908286,
+     "longitude": 80.6427559
+    }
+   ],
+   "expected": {
+    "area_sqm": 505.86,
+    "perimeter_m": 90.59,
+    "perches": 20.0,
+    "acres": 0.125,
+    "boundary_points": 4,
+    "estimate_rs_boundary_marking": 32000
+   },
+   "tolerance": "area/perimeter within 0.5% (geodesic vs your method); estimate within +-100 Rs (price is rounded to nearest 100, so 39.0 vs 38.999 perches can land on either side)"
+  },
+  {
+   "id": "A3",
+   "group": "A_area_pricing",
+   "description": "L-shaped plot, 6 vertices (40x30 minus 20x15 = 900 m2)",
+   "points": [
+    {
+     "latitude": 7.2905996,
+     "longitude": 80.6518118
+    },
+    {
+     "latitude": 7.2905996,
+     "longitude": 80.652174
+    },
+    {
+     "latitude": 7.2907353,
+     "longitude": 80.652174
+    },
+    {
+     "latitude": 7.2907353,
+     "longitude": 80.6519929
+    },
+    {
+     "latitude": 7.2908709,
+     "longitude": 80.6519929
+    },
+    {
+     "latitude": 7.2908709,
+     "longitude": 80.6518118
+    }
+   ],
+   "expected": {
+    "area_sqm": 900.0,
+    "perimeter_m": 140.0,
+    "perches": 35.583,
+    "acres": 0.2224,
+    "boundary_points": 6,
+    "estimate_rs_boundary_marking": 48200
+   },
+   "tolerance": "area/perimeter within 0.5% (geodesic vs your method); estimate within +-100 Rs (price is rounded to nearest 100, so 39.0 vs 38.999 perches can land on either side)"
+  },
+  {
+   "id": "A4",
+   "group": "A_area_pricing",
+   "description": "Right triangle 60 m x 80 m (2400 m2)",
+   "points": [
+    {
+     "latitude": 7.2905992,
+     "longitude": 80.6608676
+    },
+    {
+     "latitude": 7.2905992,
+     "longitude": 80.661411
+    },
+    {
+     "latitude": 7.2913226,
+     "longitude": 80.6608676
+    }
+   ],
+   "expected": {
+    "area_sqm": 2400.0,
+    "perimeter_m": 240.0,
+    "perches": 94.888,
+    "acres": 0.5931,
+    "boundary_points": 3,
+    "estimate_rs_boundary_marking": 71000
+   },
+   "tolerance": "area/perimeter within 0.5% (geodesic vs your method); estimate within +-100 Rs (price is rounded to nearest 100, so 39.0 vs 38.999 perches can land on either side)"
+  },
+  {
+   "id": "P39",
+   "group": "A_area_pricing",
+   "description": "39 perches rectangle (tier1 just below 40 perches)",
+   "points": [
+    {
+     "latitude": 7.2905985,
+     "longitude": 80.6699235
+    },
+    {
+     "latitude": 7.2905985,
+     "longitude": 80.6703763
+    },
+    {
+     "latitude": 7.2907769,
+     "longitude": 80.6703763
+    },
+    {
+     "latitude": 7.2907769,
+     "longitude": 80.6699235
+    }
+   ],
+   "expected": {
+    "area_sqm": 986.42,
+    "perimeter_m": 139.46,
+    "perches": 39.0,
+    "acres": 0.2437,
+    "boundary_points": 4,
+    "estimate_rs_boundary_marking": 48100
+   },
+   "tolerance": "area/perimeter within 0.5% (geodesic vs your method); estimate within +-100 Rs (price is rounded to nearest 100, so 39.0 vs 38.999 perches can land on either side)"
+  },
+  {
+   "id": "P41",
+   "group": "A_area_pricing",
+   "description": "41 perches rectangle (tier2 just above 40 perches)",
+   "points": [
+    {
+     "latitude": 7.2905977,
+     "longitude": 80.6789794
+    },
+    {
+     "latitude": 7.2905977,
+     "longitude": 80.6794322
+    },
+    {
+     "latitude": 7.2907853,
+     "longitude": 80.6794322
+    },
+    {
+     "latitude": 7.2907853,
+     "longitude": 80.6789794
+    }
+   ],
+   "expected": {
+    "area_sqm": 1037.01,
+    "perimeter_m": 141.48,
+    "perches": 41.0,
+    "acres": 0.2562,
+    "boundary_points": 4,
+    "estimate_rs_boundary_marking": 49400
+   },
+   "tolerance": "area/perimeter within 0.5% (geodesic vs your method); estimate within +-100 Rs (price is rounded to nearest 100, so 39.0 vs 38.999 perches can land on either side)"
+  },
+  {
+   "id": "P159",
+   "group": "A_area_pricing",
+   "description": "159 perches rectangle (tier2 just below 1 acre)",
+   "points": [
+    {
+     "latitude": 7.2905967,
+     "longitude": 80.6880353
+    },
+    {
+     "latitude": 7.2905967,
+     "longitude": 80.6884881
+    },
+    {
+     "latitude": 7.291324,
+     "longitude": 80.6884881
+    },
+    {
+     "latitude": 7.291324,
+     "longitude": 80.6880353
+    }
+   ],
+   "expected": {
+    "area_sqm": 4021.56,
+    "perimeter_m": 260.86,
+    "perches": 159.0,
+    "acres": 0.9937,
+    "boundary_points": 4,
+    "estimate_rs_boundary_marking": 96600
+   },
+   "tolerance": "area/perimeter within 0.5% (geodesic vs your method); estimate within +-100 Rs (price is rounded to nearest 100, so 39.0 vs 38.999 perches can land on either side)"
+  },
+  {
+   "id": "P161",
+   "group": "A_area_pricing",
+   "description": "161 perches rectangle (tier3 just above 1 acre)",
+   "points": [
+    {
+     "latitude": 7.2905956,
+     "longitude": 80.6970912
+    },
+    {
+     "latitude": 7.2905956,
+     "longitude": 80.697544
+    },
+    {
+     "latitude": 7.291332,
+     "longitude": 80.697544
+    },
+    {
+     "latitude": 7.291332,
+     "longitude": 80.6970912
+    }
+   ],
+   "expected": {
+    "area_sqm": 4072.15,
+    "perimeter_m": 262.89,
+    "perches": 161.0,
+    "acres": 1.0062,
+    "boundary_points": 4,
+    "estimate_rs_boundary_marking": 80200
+   },
+   "tolerance": "area/perimeter within 0.5% (geodesic vs your method); estimate within +-100 Rs (price is rounded to nearest 100, so 39.0 vs 38.999 perches can land on either side)"
+  },
+  {
+   "id": "B0",
+   "group": "B_overlap",
+   "description": "EXISTING approved plot already in DB (insert first, status=approved/completed)",
+   "points": [
+    {
+     "latitude": 7.2996422,
+     "longitude": 80.6337
+    },
+    {
+     "latitude": 7.2996422,
+     "longitude": 80.6346056
+    },
+    {
+     "latitude": 7.3005465,
+     "longitude": 80.6346056
+    },
+    {
+     "latitude": 7.3005465,
+     "longitude": 80.6337
+    }
+   ],
+   "expected": {
+    "area_sqm": 9999.99,
+    "perches": 395.368
+   }
+  },
+  {
+   "id": "B1",
+   "group": "B_overlap",
+   "description": "Overlaps 20 m strip on east side",
+   "role": "candidate (do not save; check against B0)",
+   "points": [
+    {
+     "latitude": 7.2996422,
+     "longitude": 80.6344245
+    },
+    {
+     "latitude": 7.2996422,
+     "longitude": 80.6353301
+    },
+    {
+     "latitude": 7.3005465,
+     "longitude": 80.6353301
+    },
+    {
+     "latitude": 7.3005465,
+     "longitude": 80.6344245
+    }
+   ],
+   "expected": {
+    "scenario": "overlap",
+    "st_intersects": true,
+    "st_touches": false,
+    "overlap_area_sqm": 2000.0,
+    "overlap_perches": 79.074,
+    "should_flag_conflict_at_0.1_perch_tolerance": true
+   }
+  },
+  {
+   "id": "B2",
+   "group": "B_overlap",
+   "description": "Shares only the east boundary line (neighbour, NOT a dispute)",
+   "role": "candidate (do not save; check against B0)",
+   "points": [
+    {
+     "latitude": 7.2996422,
+     "longitude": 80.6346056
+    },
+    {
+     "latitude": 7.2996422,
+     "longitude": 80.6355112
+    },
+    {
+     "latitude": 7.3005464,
+     "longitude": 80.6355112
+    },
+    {
+     "latitude": 7.3005465,
+     "longitude": 80.6346056
+    }
+   ],
+   "expected": {
+    "scenario": "touching",
+    "st_intersects": true,
+    "st_touches": true,
+    "overlap_area_sqm": 0.0,
+    "overlap_perches": 0.0,
+    "should_flag_conflict_at_0.1_perch_tolerance": false
+   }
+  },
+  {
+   "id": "B3",
+   "group": "B_overlap",
+   "description": "2 m2 sliver overlap (GPS noise, below 0.1 perch tolerance)",
+   "role": "candidate (do not save; check against B0)",
+   "points": [
+    {
+     "latitude": 7.2996422,
+     "longitude": 80.6346054
+    },
+    {
+     "latitude": 7.2996422,
+     "longitude": 80.635511
+    },
+    {
+     "latitude": 7.3005464,
+     "longitude": 80.635511
+    },
+    {
+     "latitude": 7.3005465,
+     "longitude": 80.6346054
+    }
+   ],
+   "expected": {
+    "scenario": "sliver",
+    "st_intersects": true,
+    "st_touches": false,
+    "overlap_area_sqm": 2.0,
+    "overlap_perches": 0.079,
+    "should_flag_conflict_at_0.1_perch_tolerance": false
+   }
+  },
+  {
+   "id": "B4",
+   "group": "B_overlap",
+   "description": "20x20 m plot fully inside the existing plot",
+   "role": "candidate (do not save; check against B0)",
+   "points": [
+    {
+     "latitude": 7.3000039,
+     "longitude": 80.6340622
+    },
+    {
+     "latitude": 7.3000039,
+     "longitude": 80.6342434
+    },
+    {
+     "latitude": 7.3001848,
+     "longitude": 80.6342434
+    },
+    {
+     "latitude": 7.3001848,
+     "longitude": 80.6340622
+    }
+   ],
+   "expected": {
+    "scenario": "contained",
+    "st_intersects": true,
+    "st_touches": false,
+    "overlap_area_sqm": 400.0,
+    "overlap_perches": 15.815,
+    "should_flag_conflict_at_0.1_perch_tolerance": true
+   }
+  },
+  {
+   "id": "B5",
+   "group": "B_overlap",
+   "description": "Same polygon as existing (duplicate submission)",
+   "role": "candidate (do not save; check against B0)",
+   "points": [
+    {
+     "latitude": 7.2996422,
+     "longitude": 80.6337
+    },
+    {
+     "latitude": 7.2996422,
+     "longitude": 80.6346056
+    },
+    {
+     "latitude": 7.3005465,
+     "longitude": 80.6346056
+    },
+    {
+     "latitude": 7.3005465,
+     "longitude": 80.6337
+    }
+   ],
+   "expected": {
+    "scenario": "duplicate",
+    "st_intersects": true,
+    "st_touches": false,
+    "overlap_area_sqm": 9999.99,
+    "overlap_perches": 395.368,
+    "should_flag_conflict_at_0.1_perch_tolerance": true
+   }
+  },
+  {
+   "id": "B6",
+   "group": "B_overlap",
+   "description": "500 m away, no relation",
+   "role": "candidate (do not save; check against B0)",
+   "points": [
+    {
+     "latitude": 7.2996422,
+     "longitude": 80.638228
+    },
+    {
+     "latitude": 7.2996422,
+     "longitude": 80.6391336
+    },
+    {
+     "latitude": 7.3005464,
+     "longitude": 80.6391336
+    },
+    {
+     "latitude": 7.3005464,
+     "longitude": 80.638228
+    }
+   ],
+   "expected": {
+    "scenario": "none",
+    "st_intersects": false,
+    "st_touches": false,
+    "overlap_area_sqm": 0.0,
+    "overlap_perches": 0.0,
+    "should_flag_conflict_at_0.1_perch_tolerance": false
+   }
+  },
+  {
+   "id": "C0",
+   "group": "C_partition",
+   "description": "Parent plot to subdivide",
+   "points": [
+    {
+     "latitude": 7.3086845,
+     "longitude": 80.6337
+    },
+    {
+     "latitude": 7.3086845,
+     "longitude": 80.6346056
+    },
+    {
+     "latitude": 7.3095887,
+     "longitude": 80.6346056
+    },
+    {
+     "latitude": 7.3095887,
+     "longitude": 80.6337
+    }
+   ],
+   "expected": {
+    "area_sqm": 9999.99,
+    "perches": 395.368
+   }
+  },
+  {
+   "id": "C1",
+   "group": "C_partition",
+   "description": "One vertical cut at x=40 m -> 2 lots (4000 / 6000 m2)",
+   "cut_lines_lonlat": [
+    [
+     [
+      80.63406224986649,
+      7.308594035084058
+     ],
+     [
+      80.63406224986649,
+      7.309679102077572
+     ]
+    ]
+   ],
+   "expected": {
+    "lot_count": 2,
+    "lot_areas_sqm": [
+     4000.0,
+     5999.99
+    ],
+    "lot_perches": [
+     158.147,
+     237.221
+    ],
+    "sum_of_lots_equals_parent_within_0.01pct": true,
+    "should_succeed": true
+   }
+  },
+  {
+   "id": "C2",
+   "group": "C_partition",
+   "description": "Two cuts x=30 and x=70 -> 3 lots (3000/4000/3000 m2)",
+   "cut_lines_lonlat": [
+    [
+     [
+      80.63397168739986,
+      7.308594035147697
+     ],
+     [
+      80.63397168739986,
+      7.309679102141209
+     ]
+    ],
+    [
+     [
+      80.63433393726635,
+      7.308594034784059
+     ],
+     [
+      80.63433393726635,
+      7.309679101777573
+     ]
+    ]
+   ],
+   "expected": {
+    "lot_count": 3,
+    "lot_areas_sqm": [
+     3000.0,
+     3000.0,
+     4000.0
+    ],
+    "lot_perches": [
+     118.611,
+     118.611,
+     158.147
+    ],
+    "sum_of_lots_equals_parent_within_0.01pct": true,
+    "should_succeed": true
+   }
+  },
+  {
+   "id": "C3",
+   "group": "C_partition",
+   "description": "Diagonal cut (-10,20)->(110,80)",
+   "cut_lines_lonlat": [
+    [
+     [
+      80.63360943753338,
+      7.308865301973683
+     ],
+     [
+      80.63469618713283,
+      7.309407834379529
+     ]
+    ]
+   ],
+   "expected": {
+    "lot_count": 2,
+    "lot_areas_sqm": [
+     4999.99,
+     5000.0
+    ],
+    "lot_perches": [
+     197.684,
+     197.684
+    ],
+    "sum_of_lots_equals_parent_within_0.01pct": true,
+    "should_succeed": true
+   }
+  },
+  {
+   "id": "C4",
+   "group": "C_partition",
+   "description": "Cut line completely outside the plot -> NO split, show error",
+   "cut_lines_lonlat": [
+    [
+     [
+      80.63551124933242,
+      7.308594031593137
+     ],
+     [
+      80.63551124933242,
+      7.30967909858665
+     ]
+    ]
+   ],
+   "expected": {
+    "lot_count": 1,
+    "lot_areas_sqm": [
+     9999.99
+    ],
+    "lot_perches": [
+     395.368
+    ],
+    "sum_of_lots_equals_parent_within_0.01pct": true,
+    "should_succeed": false
+   }
+  },
+  {
+   "id": "C5",
+   "group": "C_partition",
+   "description": "Cut line starts inside the plot and never exits -> NO split, show error",
+   "cut_lines_lonlat": [
+    [
+     [
+      80.63415281233311,
+      7.309136568505508
+     ],
+     [
+      80.63415281233311,
+      7.310040790982017
+     ]
+    ]
+   ],
+   "expected": {
+    "lot_count": 1,
+    "lot_areas_sqm": [
+     9999.99
+    ],
+    "lot_perches": [
+     395.368
+    ],
+    "sum_of_lots_equals_parent_within_0.01pct": true,
+    "should_succeed": false
+   }
+  },
+  {
+   "id": "D1",
+   "group": "D_invalid",
+   "description": "Bow-tie (self-intersecting) polygon -> ST_IsValid=false, reject",
+   "points": [
+    {
+     "latitude": 7.3177267,
+     "longitude": 80.6337
+    },
+    {
+     "latitude": 7.3186309,
+     "longitude": 80.6346056
+    },
+    {
+     "latitude": 7.3177267,
+     "longitude": 80.6346056
+    },
+    {
+     "latitude": 7.3186309,
+     "longitude": 80.6337
+    }
+   ],
+   "expected": {
+    "valid": false,
+    "reason_contains": "Self-intersection"
+   }
+  },
+  {
+   "id": "D2",
+   "group": "D_invalid",
+   "description": "Only 2 points -> reject (min 3)",
+   "points": [
+    {
+     "latitude": 7.3177267,
+     "longitude": 80.6337
+    },
+    {
+     "latitude": 7.3177267,
+     "longitude": 80.6341528
+    }
+   ],
+   "expected": {
+    "valid": false
+   }
+  },
+  {
+   "id": "D3",
+   "group": "D_invalid",
+   "description": "Latitude/longitude swapped -> lands near the Arctic, outside Sri Lanka bbox (lat 5.9-9.9, lng 79.5-81.9) -> reject",
+   "points": [
+    {
+     "latitude": 80.6337,
+     "longitude": 7.3177267
+    },
+    {
+     "latitude": 80.6341528,
+     "longitude": 7.3177267
+    },
+    {
+     "latitude": 80.6341528,
+     "longitude": 7.3181788
+    },
+    {
+     "latitude": 80.6337,
+     "longitude": 7.3181788
+    }
+   ],
+   "expected": {
+    "valid": false,
+    "inside_sri_lanka_bbox": false
+   }
+  },
+  {
+   "id": "D4",
+   "group": "D_invalid",
+   "description": "Ring not closed in GeoJSON (first != last) -> app must auto-close or reject, never crash",
+   "points": [
+    {
+     "latitude": 7.3177267,
+     "longitude": 80.6337
+    },
+    {
+     "latitude": 7.3177267,
+     "longitude": 80.6341528
+    },
+    {
+     "latitude": 7.3181788,
+     "longitude": 80.6341528
+    },
+    {
+     "latitude": 7.3181788,
+     "longitude": 80.6337
+    }
+   ],
+   "geojson_unclosed_ring": [
+    [
+     [
+      80.6337,
+      7.3177266807987165
+     ],
+     [
+      80.63415282144393,
+      7.317726680571159
+     ],
+     [
+      80.63415282144393,
+      7.318178791642032
+     ],
+     [
+      80.6337,
+      7.318178791869591
+     ]
+    ]
+   ],
+   "expected": {
+    "valid": "auto-close",
+    "area_sqm": 2500.0
+   }
+  },
+  {
+   "id": "D5",
+   "group": "D_invalid",
+   "description": "10 km x 10 km polygon (100 km2) -> accept only if you set a max-area sanity cap; recommend warn/reject",
+   "points": [
+    {
+     "latitude": 7.3177267,
+     "longitude": 80.6337
+    },
+    {
+     "latitude": 7.3177176,
+     "longitude": 80.7242643
+    },
+    {
+     "latitude": 7.4081396,
+     "longitude": 80.7242643
+    },
+    {
+     "latitude": 7.4081487,
+     "longitude": 80.6337
+    }
+   ],
+   "expected": {
+    "area_sqm": 99989912.0,
+    "perches": 3953287.0,
+    "suggested_behavior": "reject above e.g. 500 acres"
+   }
+  },
+  {
+   "id": "E1",
+   "group": "E_recommender",
+   "description": "Square 100x100 m, 3 lots: a well sits where the naive cut falls, a building is crossed by the other naive cut",
+   "points": [
+    {
+     "latitude": 7.3267689,
+     "longitude": 80.6346057
+    },
+    {
+     "latitude": 7.3276731,
+     "longitude": 80.6346057
+    },
+    {
+     "latitude": 7.3276731,
+     "longitude": 80.6337
+    },
+    {
+     "latitude": 7.3267689,
+     "longitude": 80.6337
+    }
+   ],
+   "features": [
+    {
+     "type": "well",
+     "label": "Well",
+     "clearance_m": 2.0,
+     "geometry": {
+      "type": "Point",
+      "coordinates": [
+       80.63400185685552,
+       7.327221011283946
+      ]
+     }
+    },
+    {
+     "type": "building",
+     "label": "House",
+     "clearance_m": 1.0,
+     "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+       [
+        [
+         80.6343792458495,
+         7.3269497443398075
+        ],
+        [
+         80.6343792458495,
+         7.3270853776065845
+        ],
+        [
+         80.63424339667961,
+         7.3270853777911364
+        ],
+        [
+         80.63424339667961,
+         7.3269497445243585
+        ],
+        [
+         80.6343792458495,
+         7.3269497443398075
+        ]
+       ]
+      ]
+     }
+    },
+    {
+     "type": "tree",
+     "label": "Mango tree",
+     "clearance_m": 1.0,
+     "geometry": {
+      "type": "Point",
+      "coordinates": [
+       80.63379056611328,
+       7.327582700081315
+      ]
+     }
+    }
+   ],
+   "expected": {
+    "lots": 3,
+    "area_tolerance_pct": 5.0,
+    "sweep_step_deg": 5,
+    "parent_area_sqm": 10000.0,
+    "target_lot_area_sqm": 3333.33,
+    "valid_candidate_angles_of_36": 36,
+    "conflict_free_proposals_exist": true,
+    "best_proposal": {
+     "conflicts": 0,
+     "lot_areas_sqm": [
+      3333.3,
+      3333.3,
+      3333.3
+     ],
+     "max_area_dev_pct": 0.0
+    },
+    "assert": "at least one proposal with conflicts == 0 and every lot within tolerance of target",
+    "do_not_assert": "specific angles or cut positions (they depend on the implementation)"
+   }
+  },
+  {
+   "id": "E2",
+   "group": "E_recommender",
+   "description": "Concave L-shaped plot (900 m2), 3 lots: multipart lots must be discarded",
+   "points": [
+    {
+     "latitude": 7.3267688,
+     "longitude": 80.6427559
+    },
+    {
+     "latitude": 7.3267688,
+     "longitude": 80.6431181
+    },
+    {
+     "latitude": 7.3269044,
+     "longitude": 80.6431181
+    },
+    {
+     "latitude": 7.3269044,
+     "longitude": 80.642937
+    },
+    {
+     "latitude": 7.3270401,
+     "longitude": 80.642937
+    },
+    {
+     "latitude": 7.3270401,
+     "longitude": 80.6427559
+    }
+   ],
+   "features": [],
+   "expected": {
+    "lots": 3,
+    "area_tolerance_pct": 2.0,
+    "sweep_step_deg": 5,
+    "parent_area_sqm": 900.0,
+    "target_lot_area_sqm": 300.0,
+    "valid_candidate_angles_of_36": 19,
+    "conflict_free_proposals_exist": true,
+    "best_proposal": {
+     "conflicts": 0,
+     "lot_areas_sqm": [
+      300.0,
+      300.0,
+      300.0
+     ],
+     "max_area_dev_pct": 0.0
+    },
+    "assert": "at least one proposal with conflicts == 0 and every lot within tolerance of target",
+    "do_not_assert": "specific angles or cut positions (they depend on the implementation)",
+    "extra": "proposals producing a multipart lot must be discarded; expect fewer valid candidates than angles (prototype: 19 of 36 at N=3)"
+   }
+  },
+  {
+   "id": "E3",
+   "group": "E_recommender",
+   "description": "Canal across the whole plot, 2 lots: only a canal-parallel cut can be conflict free (needs the area tolerance)",
+   "points": [
+    {
+     "latitude": 7.3267685,
+     "longitude": 80.6527174
+    },
+    {
+     "latitude": 7.3276728,
+     "longitude": 80.6527174
+    },
+    {
+     "latitude": 7.3276728,
+     "longitude": 80.6518118
+    },
+    {
+     "latitude": 7.3267685,
+     "longitude": 80.6518118
+    }
+   ],
+   "features": [
+    {
+     "type": "canal",
+     "label": "Canal",
+     "clearance_m": 1.0,
+     "geometry": {
+      "type": "LineString",
+      "coordinates": [
+       [
+        80.65181176583657,
+        7.327220648657122
+       ],
+       [
+        80.65271742696851,
+        7.327220647745755
+       ]
+      ]
+     }
+    }
+   ],
+   "expected": {
+    "lots": 2,
+    "area_tolerance_pct": 2.0,
+    "sweep_step_deg": 5,
+    "parent_area_sqm": 10000.0,
+    "target_lot_area_sqm": 5000.0,
+    "valid_candidate_angles_of_36": 36,
+    "conflict_free_proposals_exist": true,
+    "best_proposal": {
+     "conflicts": 0,
+     "lot_areas_sqm": [
+      4900.0,
+      5100.0
+     ],
+     "max_area_dev_pct": 2.0
+    },
+    "assert": "at least one proposal with conflicts == 0 and every lot within tolerance of target",
+    "do_not_assert": "specific angles or cut positions (they depend on the implementation)"
+   }
+  },
+  {
+   "id": "E4",
+   "group": "E_recommender",
+   "description": "Sanity: square, 4 lots, no features -> exactly equal lots",
+   "points": [
+    {
+     "latitude": 7.3267681,
+     "longitude": 80.6617733
+    },
+    {
+     "latitude": 7.3276723,
+     "longitude": 80.6617733
+    },
+    {
+     "latitude": 7.3276723,
+     "longitude": 80.6608676
+    },
+    {
+     "latitude": 7.3267681,
+     "longitude": 80.6608676
+    }
+   ],
+   "features": [],
+   "expected": {
+    "lots": 4,
+    "area_tolerance_pct": 0.0,
+    "sweep_step_deg": 5,
+    "parent_area_sqm": 10000.0,
+    "target_lot_area_sqm": 2500.0,
+    "valid_candidate_angles_of_36": 36,
+    "conflict_free_proposals_exist": true,
+    "best_proposal": {
+     "conflicts": 0,
+     "lot_areas_sqm": [
+      2500.0,
+      2500.0,
+      2500.0,
+      2500.0
+     ],
+     "max_area_dev_pct": 0.0
+    },
+    "assert": "at least one proposal with conflicts == 0 and every lot within tolerance of target",
+    "do_not_assert": "specific angles or cut positions (they depend on the implementation)"
+   }
+  },
+  {
+   "id": "E5",
+   "group": "E_recommender",
+   "description": "Impossible case: a 70x70 m building in the middle; every equal-area straight cut crosses it -> best effort WITH conflicts, never an error",
+   "points": [
+    {
+     "latitude": 7.3267674,
+     "longitude": 80.6708292
+    },
+    {
+     "latitude": 7.3276717,
+     "longitude": 80.6708292
+    },
+    {
+     "latitude": 7.3276717,
+     "longitude": 80.6699235
+    },
+    {
+     "latitude": 7.3267674,
+     "longitude": 80.6699235
+    }
+   ],
+   "features": [
+    {
+     "type": "building",
+     "label": "Large house",
+     "clearance_m": 1.0,
+     "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+       [
+        [
+         80.67069334357514,
+         7.32690308219264
+        ],
+        [
+         80.67069334357514,
+         7.327536037431929
+        ],
+        [
+         80.67005938078432,
+         7.327536038069886
+        ],
+        [
+         80.67005938078432,
+         7.326903082830599
+        ],
+        [
+         80.67069334357514,
+         7.32690308219264
+        ]
+       ]
+      ]
+     }
+    }
+   ],
+   "expected": {
+    "lots": 2,
+    "area_tolerance_pct": 2.0,
+    "sweep_step_deg": 5,
+    "parent_area_sqm": 10000.0,
+    "target_lot_area_sqm": 5000.0,
+    "valid_candidate_angles_of_36": 36,
+    "conflict_free_proposals_exist": false,
+    "best_proposal": {
+     "conflicts": 1,
+     "lot_areas_sqm": [
+      5000.0,
+      5000.0
+     ],
+     "max_area_dev_pct": 0.0
+    },
+    "assert": "NO conflict-free proposal exists: return the best proposals with conflicts > 0 flagged as warnings (HTTP 200, not an error)",
+    "do_not_assert": "specific angles or cut positions (they depend on the implementation)"
+   }
+  }
+ ],
+ "pricing_probe_boundary_marking_4pts": [
+  {
+   "perches": 38,
+   "estimate_rs": 47300
+  },
+  {
+   "perches": 39,
+   "estimate_rs": 48200
+  },
+  {
+   "perches": 40,
+   "estimate_rs": 49000
+  },
+  {
+   "perches": 41,
+   "estimate_rs": 49400
+  },
+  {
+   "perches": 100,
+   "estimate_rs": 73000
+  },
+  {
+   "perches": 158,
+   "estimate_rs": 96200
+  },
+  {
+   "perches": 159,
+   "estimate_rs": 96600
+  },
+  {
+   "perches": 160,
+   "estimate_rs": 80000
+  },
+  {
+   "perches": 161,
+   "estimate_rs": 80200
+  },
+  {
+   "perches": 200,
+   "estimate_rs": 88000
+  },
+  {
+   "perches": 320,
+   "estimate_rs": 115000
+  },
+  {
+   "perches": 321,
+   "estimate_rs": 115200
+  }
+ ]
+}

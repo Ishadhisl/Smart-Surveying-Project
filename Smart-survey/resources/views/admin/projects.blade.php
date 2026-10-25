@@ -187,12 +187,24 @@
                             </form>
                             @endif
 
+                            <a href="{{ route('admin.cadastral', $project) }}"
+                                class="action-btn justify-center w-full text-[10px] py-1.5 mt-1 border-none shadow-md inline-flex items-center gap-1 font-bold tracking-wider"
+                                style="background: linear-gradient(135deg, #0d9488, #0f766e); color: white;" title="Open Cadastral Map Workspace">
+                                🗺️ Cadastral Workspace
+                            </a>
+
+                            @if($project->purpose === 'partitioning')
+                            <a href="{{ route('admin.subdivision', $project) }}"
+                                class="action-btn justify-center w-full text-[10px] py-1 mt-1 border-none shadow-sm inline-flex items-center gap-1 font-bold tracking-wider bg-slate-800 text-white hover:bg-slate-900" title="Open Land Subdivision Studio">
+                                ✂️ Subdivision Studio
+                            </a>
+                            @endif
+
                             @if(in_array($project->status, ['mapping', 'completed']))
                             <button type="button"
                                 onclick="openBoundaryModal({{ $project->id }}, '{{ addslashes($project->user->name) }}', '{{ $project->village }}')"
-                                class="action-btn justify-center w-full text-[10px] py-1.5 mt-1 border-none shadow-md"
-                                style="background: linear-gradient(135deg, #0d9488, #0f766e); color: white;">
-                                📍 Set AR Boundaries
+                                class="action-btn justify-center w-full text-[10px] py-1 mt-1 text-slate-700 bg-white/40 hover:bg-white/60">
+                                📍 Legacy AR Points
                             </button>
                             @endif
 
@@ -339,29 +351,60 @@
 </div>
 
 
-{{-- ====== SCHEDULE MODAL ====== --}}
+{{-- ====== SCHEDULE MODAL WITH 7-DAY WEATHER PLANNER ====== --}}
 <div id="scheduleModal" class="modal-overlay">
-    <div class="modal-box">
-        <div class="flex items-center justify-between mb-5">
-            <h3 class="text-xl font-extrabold text-slate-900">Propose Site Visit</h3>
+    <div class="modal-box max-w-2xl">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h3 class="text-xl font-extrabold text-slate-900">Propose Site Visit</h3>
+                <p class="text-xs text-slate-500 font-medium">Plan the field survey with real-time meteorological risk scoring</p>
+            </div>
             <button onclick="closeModal('scheduleModal')" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 transition">
                 <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
 
-        <div class="glass rounded-2xl p-3 mb-5">
-            <p class="text-[10px] text-slate-500 font-black uppercase tracking-widest">Client</p>
-            <p class="font-black text-slate-800 mt-0.5" id="schedule-project-name">—</p>
+        <div class="glass rounded-2xl p-3 mb-4 flex items-center justify-between">
+            <div>
+                <p class="text-[10px] text-slate-500 font-black uppercase tracking-widest">Client Land / Project</p>
+                <p class="font-black text-slate-800 text-sm mt-0.5" id="schedule-project-name">—</p>
+            </div>
+            <div id="strip-loading-indicator" class="text-xs font-bold text-deepteal flex items-center gap-1.5 hidden">
+                <span class="animate-spin text-base">⏳</span> Fetching forecast...
+            </div>
+        </div>
+
+        {{-- 7-Day Forecast Strip --}}
+        <div class="mb-5">
+            <div class="flex items-center justify-between mb-2">
+                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                    <span>🌦️ 7-Day Weather Risk Advisor</span>
+                    <span class="text-[9px] font-bold text-slate-400 normal-case">(Click any day to select)</span>
+                </label>
+                <span class="text-[9px] font-bold text-deepteal bg-deepteal/10 px-2 py-0.5 rounded-full" id="strip-best-count">Top 3 Recommended</span>
+            </div>
+
+            <div id="schedule-weather-strip" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+                {{-- Populated dynamically via JS --}}
+                <div class="col-span-full py-6 text-center text-xs text-slate-400 font-semibold bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                    Open schedule to load 7-day meteorological forecast.
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-400 font-medium">
+                <span>⚠️ <em>Advisory planning defaults, not legal regulations. Licensed surveyor makes the final visit decision.</em></span>
+                <span class="mt-1 sm:mt-0 font-semibold">Forecast: Open-Meteo.com (CC BY 4.0)</span>
+            </div>
         </div>
 
         <form id="scheduleForm" method="POST">
             @csrf
             <div class="mb-5">
-                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Select Visit Date & Time</label>
+                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Selected Visit Date & Time</label>
                 <input type="datetime-local" name="proposed_at" id="schedule-proposed-at"
                     class="admin-input date-weather-trigger"
                     min="{{ now()->format('Y-m-d\TH:i') }}" required>
-                <div id="schedule-weather-preview" class="mt-3 hidden bg-white/40 border border-white/50 rounded-xl p-3 flex items-center gap-3 transition-all"></div>
+                <div id="schedule-weather-preview" class="mt-3 hidden bg-white/60 border border-slate-200 rounded-2xl p-3 flex items-center gap-3 transition-all shadow-sm"></div>
             </div>
             <button type="submit" class="w-full btn-teal py-3.5 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg">
                 Send Proposal to Client
@@ -450,7 +493,10 @@
     });
 
 
+    let currentSurveyId = null;
+
     function openScheduleModal(id, clientName, village, lat = null, lng = null) {
+        currentSurveyId = id;
         currentProjectLat = lat;
         currentProjectLng = lng;
         document.getElementById('schedule-project-name').textContent = '#' + id + ' — ' + clientName + ' (' + village + ')';
@@ -459,6 +505,107 @@
         document.getElementById('schedule-weather-preview').innerHTML = '';
         document.getElementById('scheduleForm').action = '/admin/survey/' + id + '/propose-schedule';
         document.getElementById('scheduleModal').classList.add('show');
+
+        // Fetch 7-day forecast strip
+        loadWeatherStrip(id, lat, lng);
+    }
+
+    async function loadWeatherStrip(surveyId, lat, lng) {
+        const stripContainer = document.getElementById('schedule-weather-strip');
+        const loader = document.getElementById('strip-loading-indicator');
+        
+        loader.classList.remove('hidden');
+        stripContainer.innerHTML = `
+            <div class="col-span-full py-6 text-center text-xs text-slate-500 font-semibold bg-slate-50 rounded-2xl border border-dashed border-slate-200 animate-pulse">
+                ⏳ Loading 7-day weather assessment...
+            </div>
+        `;
+
+        try {
+            const url = `/admin/survey/${surveyId}/weather-forecast` + (lat && lng ? `?lat=${lat}&lng=${lng}` : '');
+            const response = await fetch(url);
+            loader.classList.add('hidden');
+
+            if (!response.ok) throw new Error('Forecast unavailable');
+            const data = await response.json();
+
+            if (!data.per_day || data.per_day.length === 0) {
+                stripContainer.innerHTML = `
+                    <div class="col-span-full py-4 text-center text-xs text-slate-400 font-medium">
+                        Forecast unavailable for this location.
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            data.per_day.forEach(day => {
+                const isBest = (data.best_days_in_order || []).includes(day.date);
+                let riskClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                let riskBadge = 'Low Risk';
+
+                if (day.risk === 'High') {
+                    riskClass = 'bg-rose-50 text-rose-700 border-rose-200';
+                    riskBadge = 'High Risk';
+                } else if (day.risk === 'Medium') {
+                    riskClass = 'bg-amber-50 text-amber-700 border-amber-200';
+                    riskBadge = 'Medium';
+                }
+
+                const dayDateObj = new Date(day.date + 'T00:00:00');
+                const dayShort = dayDateObj.toLocaleDateString('en-US', { weekday: 'short' });
+                const dateShort = dayDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+                html += `
+                    <div onclick="selectForecastDate('${day.date}', this)"
+                         class="weather-day-card cursor-pointer border rounded-2xl p-2.5 transition-all text-center hover:scale-105 hover:shadow-md bg-white border-slate-200 relative">
+                        ${isBest ? `<span class="absolute -top-2 left-1/2 -translate-x-1/2 bg-deepteal text-white text-[8px] font-black px-1.5 py-0.2 rounded-full uppercase tracking-tighter whitespace-nowrap shadow-sm">★ Top Pick</span>` : ''}
+                        
+                        <div class="text-[11px] font-black text-slate-800 leading-tight mt-0.5">${dayShort}</div>
+                        <div class="text-[9px] font-bold text-slate-400 mb-1">${dateShort}</div>
+                        
+                        <div class="text-2xl my-1 drop-shadow-sm">${day.icon || '⛅'}</div>
+                        <div class="text-xs font-black text-slate-800">${Math.round(day.temperature_2m_max)}°C</div>
+                        
+                        <div class="mt-1 text-[8px] font-bold px-1.5 py-0.5 rounded-full border ${riskClass}">
+                            ${riskBadge}
+                        </div>
+
+                        <div class="mt-1 text-[8px] text-slate-400 font-semibold space-y-0.5 leading-tight">
+                            <div>💧 ${day.precipitation_sum}mm</div>
+                            <div>💨 ${Math.round(day.wind_speed_10m_max)}km/h</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            stripContainer.innerHTML = html;
+
+        } catch (err) {
+            loader.classList.add('hidden');
+            stripContainer.innerHTML = `
+                <div class="col-span-full py-4 text-center text-xs text-slate-400 font-medium">
+                    Weather forecast currently unavailable. You may manually select a visit date below.
+                </div>
+            `;
+        }
+    }
+
+    function selectForecastDate(dateStr, cardElement) {
+        // Highlight chosen card
+        document.querySelectorAll('.weather-day-card').forEach(c => {
+            c.classList.remove('ring-2', 'ring-deepteal', 'border-deepteal', 'bg-deepteal/5');
+            c.classList.add('bg-white', 'border-slate-200');
+        });
+        if (cardElement) {
+            cardElement.classList.add('ring-2', 'ring-deepteal', 'border-deepteal', 'bg-deepteal/5');
+            cardElement.classList.remove('border-slate-200', 'bg-white');
+        }
+
+        const dateInput = document.getElementById('schedule-proposed-at');
+        // Default to morning visit at 09:00 AM
+        dateInput.value = `${dateStr}T09:00`;
+        dateInput.dispatchEvent(new Event('change'));
     }
 
     function closeModal(id) {
@@ -483,7 +630,7 @@
                 return;
             }
 
-            previewDiv.innerHTML = '<span class="text-xs font-bold text-slate-500">⏳ Fetching weather...</span>';
+            previewDiv.innerHTML = '<span class="text-xs font-bold text-slate-500">⏳ Fetching weather assessment...</span>';
             previewDiv.classList.remove('hidden');
 
             try {
@@ -496,17 +643,39 @@
                     return;
                 }
 
-                let warningHtml = '';
-                if (weather.is_bad) {
-                    warningHtml = `<p class="text-[9px] font-black text-orange-600 uppercase tracking-tighter mt-1 bg-orange-100/80 px-2 py-0.5 rounded-md inline-block">⚠️ Unfavorable Weather</p>`;
+                if (weather.status === 'unavailable') {
+                    previewDiv.innerHTML = `
+                        <div class="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 p-2 rounded-xl w-full">
+                            ℹ️ ${weather.message}
+                        </div>
+                    `;
+                    return;
                 }
 
+                let badgeColor = 'bg-emerald-100 text-emerald-800 border-emerald-300';
+                if (weather.risk === 'High') {
+                    badgeColor = 'bg-rose-100 text-rose-800 border-rose-300';
+                } else if (weather.risk === 'Medium') {
+                    badgeColor = 'bg-amber-100 text-amber-800 border-amber-300';
+                }
+
+                const reasonsHtml = (weather.reasons && weather.reasons.length > 0)
+                    ? `<p class="text-[9px] text-slate-500 font-semibold mt-0.5">${weather.reasons[0]}</p>`
+                    : '';
+
                 previewDiv.innerHTML = `
-                    <span class="text-3xl drop-shadow-sm">${weather.icon}</span>
-                    <div class="flex flex-col">
-                        <p class="text-sm font-black text-slate-900 leading-tight">${weather.temp}°C</p>
-                        <p class="text-[10px] text-slate-600 font-extrabold uppercase tracking-widest">${weather.description}</p>
-                        ${warningHtml}
+                    <span class="text-3xl drop-shadow-sm">${weather.icon || '⛅'}</span>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-black text-slate-900">${weather.temp}°C</span>
+                            <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded-md border ${badgeColor}">
+                                ${weather.risk || 'Normal'} (${weather.score || 80}/100)
+                            </span>
+                        </div>
+                        <p class="text-[10px] text-slate-600 font-extrabold uppercase tracking-wide mt-0.5">
+                            ${weather.description || 'Forecast available'} · 💧 ${weather.precipitation_sum || 0}mm · 💨 ${weather.wind_speed_10m_max || 0}km/h
+                        </p>
+                        ${reasonsHtml}
                     </div>
                 `;
             } catch (error) {

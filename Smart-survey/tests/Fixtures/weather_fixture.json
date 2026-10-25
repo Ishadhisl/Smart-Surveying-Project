@@ -1,0 +1,119 @@
+{
+ "_comment": "Open-Meteo style /v1/forecast daily response for Kandy (7.2906, 80.6337). Use Http::fake() in Laravel tests so tests never call the real API or Gemini.",
+ "rule_used_for_expected_risk": "High: weather_code in (95,96,99) OR rain>5 mm OR wind>40 km/h; Medium: rain>1 mm OR wind>30 km/h; else Low. Day 6 sits exactly on the limits (rain=1.0, wind=30) and must be Low (limits are 'greater than').",
+ "api_response": {
+  "latitude": 7.3,
+  "longitude": 80.6,
+  "timezone": "Asia/Colombo",
+  "daily_units": {
+   "precipitation_sum": "mm",
+   "wind_speed_10m_max": "km/h",
+   "cloud_cover_mean": "%",
+   "temperature_2m_max": "°C"
+  },
+  "daily": {
+   "time": [
+    "2026-10-12",
+    "2026-10-13",
+    "2026-10-14",
+    "2026-10-15",
+    "2026-10-16",
+    "2026-10-17",
+    "2026-10-18"
+   ],
+   "weather_code": [
+    1,
+    2,
+    95,
+    61,
+    1,
+    3,
+    82
+   ],
+   "precipitation_sum": [
+    0.0,
+    0.8,
+    22.4,
+    3.2,
+    0.0,
+    1.0,
+    9.5
+   ],
+   "wind_speed_10m_max": [
+    12,
+    18,
+    28,
+    14,
+    38,
+    30,
+    45
+   ],
+   "cloud_cover_mean": [
+    20,
+    55,
+    90,
+    75,
+    30,
+    40,
+    85
+   ],
+   "temperature_2m_max": [
+    31.2,
+    30.5,
+    27.1,
+    28.4,
+    31.8,
+    30.9,
+    26.7
+   ]
+  }
+ },
+ "expected": {
+  "per_day": [
+   {
+    "date": "2026-10-12",
+    "weekday": "Monday",
+    "expected_risk": "Low"
+   },
+   {
+    "date": "2026-10-13",
+    "weekday": "Tuesday",
+    "expected_risk": "Low"
+   },
+   {
+    "date": "2026-10-14",
+    "weekday": "Wednesday",
+    "expected_risk": "High"
+   },
+   {
+    "date": "2026-10-15",
+    "weekday": "Thursday",
+    "expected_risk": "Medium"
+   },
+   {
+    "date": "2026-10-16",
+    "weekday": "Friday",
+    "expected_risk": "Medium"
+   },
+   {
+    "date": "2026-10-17",
+    "weekday": "Saturday",
+    "expected_risk": "Low"
+   },
+   {
+    "date": "2026-10-18",
+    "weekday": "Sunday",
+    "expected_risk": "High"
+   }
+  ],
+  "best_days_in_order": [
+   "2026-10-12",
+   "2026-10-13",
+   "2026-10-17"
+  ],
+  "worst_days": [
+   "2026-10-14",
+   "2026-10-18"
+  ]
+ }
+}

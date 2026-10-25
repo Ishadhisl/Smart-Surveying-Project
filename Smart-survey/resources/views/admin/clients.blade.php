@@ -16,6 +16,80 @@
     </form>
 </div>
 
+{{-- PENDING SURVEYOR APPROVALS (PROFESSIONAL VERIFICATION) --}}
+@if(isset($pendingSurveyors) && $pendingSurveyors->count() > 0)
+<div class="mb-10">
+    <div class="flex items-center gap-2 mb-3">
+        <span class="p-1.5 bg-amber-500 text-white rounded-lg shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        </span>
+        <h2 class="text-lg font-black text-slate-900 tracking-tight">Pending Surveyor Applications</h2>
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-100 text-amber-800">{{ $pendingSurveyors->count() }} Pending</span>
+    </div>
+
+    <div class="glass rounded-[2rem] overflow-hidden shadow-xl border border-amber-300/40 bg-white/70">
+        <div class="overflow-x-auto">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Surveyor Name</th>
+                        <th>License Number</th>
+                        <th>Contact Email / WhatsApp</th>
+                        <th>Applied On</th>
+                        <th class="text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($pendingSurveyors as $surveyor)
+                    <tr class="hover:bg-amber-50/40 transition-colors">
+                        <td>
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-800 font-black flex items-center justify-center text-xs">
+                                    {{ substr($surveyor->name, 0, 2) }}
+                                </div>
+                                <div>
+                                    <span class="font-extrabold text-slate-900 block">{{ $surveyor->name }}</span>
+                                    <span class="text-[10px] font-bold text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded-md">Pending Verification</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="font-black text-slate-900 font-mono text-xs px-2.5 py-1 bg-white rounded-lg border border-slate-200">
+                                {{ $surveyor->license_number }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="text-xs font-bold text-slate-700">{{ $surveyor->email }}</div>
+                            <div class="text-[10px] text-slate-500 font-bold">{{ $surveyor->whatsapp_number }}</div>
+                        </td>
+                        <td>
+                            <span class="text-xs font-bold text-slate-500">{{ $surveyor->created_at->format('M d, Y - H:i') }}</span>
+                        </td>
+                        <td class="text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <form action="{{ route('admin.surveyors.approve', $surveyor->id) }}" method="POST" onsubmit="return confirm('Confirm verification and activate surveyor account for {{ $surveyor->name }}?');">
+                                    @csrf
+                                    <button type="submit" class="action-btn abtn-teal text-xs py-1.5 px-3">
+                                        ✓ Approve License
+                                    </button>
+                                </form>
+                                <form action="{{ route('admin.surveyors.reject', $surveyor->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to reject this application?');">
+                                    @csrf
+                                    <button type="submit" class="action-btn text-xs py-1.5 px-3 bg-red-100 text-red-700 hover:bg-red-200">
+                                        ✕ Reject
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@endif
+
 <div class="glass rounded-[2rem] overflow-hidden shadow-xl border border-white/40">
     <div class="overflow-x-auto">
         <table class="admin-table">

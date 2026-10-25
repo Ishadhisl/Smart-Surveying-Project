@@ -12,16 +12,25 @@ class Payment extends Model
 
     protected $fillable = [
         'survey_id',
-        'type', // advance or balance
-        'amount',
-        'status', // pending, AdvancePaid, ActualPaid, failed
-        'payhere_order_id',
-        'paid_at',
+        'order_id',
+        'payment_type', // advance, balance
+        'expected_amount',
+        'paid_amount',
+        'currency',
+        'payment_method', // payhere, bank_transfer, cash
+        'status', // pending, pending_review, completed, failed, mismatch
+        'merchant_id',
+        'transaction_id',
+        'payhere_payment_id',
+        'payment_slip_path',
+        'idempotency_key',
+        'raw_response',
     ];
 
     protected $casts = [
-        'amount' => 'decimal:2',
-        'paid_at' => 'datetime',
+        'expected_amount' => 'decimal:2',
+        'paid_amount'     => 'decimal:2',
+        'raw_response'    => 'array',
     ];
 
     public function survey()

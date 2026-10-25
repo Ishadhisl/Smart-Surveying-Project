@@ -23,10 +23,16 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'is_approved',
         'license_number',
         'whatsapp_number',
         'language',
     ];
+
+    public function isSurveyor(): bool
+    {
+        return $this->role === 'admin' && (bool) ($this->is_approved ?? true);
+    }
 
     public function surveys()
     {
@@ -53,6 +59,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_approved' => 'boolean',
         ];
     }
 }

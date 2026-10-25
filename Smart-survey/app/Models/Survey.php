@@ -63,4 +63,32 @@ class Survey extends Model
     {
         return $this->hasMany(BoundaryPoint::class)->orderBy('point_order');
     }
+
+    public function boundaries()
+    {
+        return $this->hasMany(SurveyBoundary::class)->orderByDesc('version_no');
+    }
+
+    public function features()
+    {
+        return $this->hasMany(SurveyFeature::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function lots()
+    {
+        return $this->hasMany(SurveyLot::class);
+    }
+
+    /**
+     * Get the latest boundary of a given kind.
+     */
+    public function latestBoundary(string $kind = 'surveyor_final'): ?SurveyBoundary
+    {
+        return $this->boundaries()->where('kind', $kind)->first();
+    }
 }

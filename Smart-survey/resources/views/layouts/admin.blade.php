@@ -22,6 +22,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    @stack('admin-styles')
 
     <style>
         /* ============================
@@ -237,6 +238,11 @@
 
         {{-- Center nav --}}
         <div class="hidden md:flex items-center space-x-8">
+            <a href="{{ route('home') }}"
+               class="text-sm font-bold transition-colors text-slate-800 hover:text-deepteal flex items-center gap-1.5" title="View Public Website">
+               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+               <span>Public Site</span>
+            </a>
             <a href="{{ url('/admin/dashboard') }}"
                class="text-sm font-bold transition-colors {{ request()->is('admin/dashboard') ? 'text-deepteal underline underline-offset-4' : 'text-slate-800 hover:text-deepteal' }}">
                Dashboard
@@ -384,6 +390,22 @@
         @yield('admin-content')
     </div>
 </div>
+
+<!-- Global Footer -->
+<footer class="mt-20 border-t border-white/20 glass">
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-bold text-slate-800">
+            <div class="flex items-center gap-2">
+                <span class="text-slate-900 font-extrabold tracking-tight">Smart Survey Systems</span>
+                <span class="text-slate-500">&bull;</span>
+                <span class="text-slate-600">Admin & Surveyor Portal</span>
+            </div>
+            <div class="text-[10px] tracking-widest uppercase font-bold text-slate-700">
+                &copy; {{ date('Y') }} Smart Survey Systems &bull; Precision & Engineering Excellence
+            </div>
+        </div>
+    </div>
+</footer>
 
 {{-- Mobile Bottom Nav --}}
 <div class="lg:hidden fixed bottom-0 left-0 right-0 z-50 glass border-t border-white/20 px-4 py-2">

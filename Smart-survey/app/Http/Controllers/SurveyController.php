@@ -53,7 +53,7 @@ class SurveyController extends Controller
 
         $deedPath = null;
         if ($request->hasFile('deed')) {
-            $deedPath = $request->file('deed')->store('deeds', 'public');
+            $deedPath = $request->file('deed')->store('deeds', 'private');
         }
 
         // Price Calculation via Service
@@ -74,7 +74,18 @@ class SurveyController extends Controller
         if ($survey->user_id !== Auth::id() && Auth::user()->role !== 'admin') {
             abort(403);
         }
-        return view('client.show', compact('survey'));
+
+        $weather = null;
+        $targetDate = $survey->scheduled_at ?? $survey->proposed_at;
+        if ($targetDate && $survey->location_lat && $survey->location_lng) {
+            $weather = $this->weatherService->getWeatherForDate(
+                (float) $survey->location_lat,
+                (float) $survey->location_lng,
+                $targetDate
+            );
+        }
+
+        return view('client.show', compact('survey', 'weather'));
     }
 
     public function adminDashboard()
@@ -167,6 +178,25 @@ class SurveyController extends Controller
         return back()->with('success', 'Project #' . $survey->id . ' updated successfully.');
     }
 
+    public function cancel(Request $request, Survey $survey)
+    {
+        $this->authorize('cancel', $survey);
+
+        $validated = $request->validate([
+            'cancellation_reason' => 'nullable|string|max:500',
+        ]);
+
+        $transitionService = app(\App\Services\SurveyTransitionService::class);
+        $context = [
+            'cancellation_reason' => $validated['cancellation_reason'] ?? 'Cancelled by user',
+            'refund_due' => in_array($survey->status, ['advance_paid', 'site_visit', 'actual_paid', 'mapping'], true),
+        ];
+
+        $transitionService->transition($survey, \App\Enums\SurveyStatus::CANCELLED, Auth::user(), $context);
+
+        return back()->with('success', 'Survey #' . $survey->id . ' has been cancelled.');
+    }
+
     public function proposeSchedule(Request $request, Survey $survey)
     {
         $request->validate(['proposed_at' => 'required|date']);
@@ -186,26 +216,41 @@ class SurveyController extends Controller
 
         if ($request->response === 'accept') {
             $survey->update([
-                'scheduled_at' => $survey->proposed_at,
+                'scheduled_at'    => $survey->proposed_at,
                 'schedule_status' => 'accepted',
-                'status' => 'confirmed'
             ]);
+
+            $transitionService = app(\App\Services\SurveyTransitionService::class);
+            $transitionService->transition($survey, \App\Enums\SurveyStatus::CONFIRMED, Auth::user());
             
             $pricingService = app(\App\Services\PricingService::class);
-            // Generate pending Advance payment
-            \App\Models\Payment::firstOrCreate([
-                'survey_id' => $survey->id,
-                'type' => 'advance',
-                'status' => 'pending'
-            ], [
-                'amount' => $pricingService->getAdvanceAmount($survey->estimate_price)
-            ]);
+            $advanceAmount = $pricingService->getAdvanceAmount($survey->estimate_price);
+            $orderId = 'SS-' . $survey->id . '-advance-' . time();
+
+            // Generate pending Advance payment record if none exists
+            $existing = \App\Models\Payment::where('survey_id', $survey->id)
+                ->where('payment_type', 'advance')
+                ->whereIn('status', ['pending', 'completed'])
+                ->first();
+
+            if (!$existing) {
+                \App\Models\Payment::create([
+                    'survey_id'       => $survey->id,
+                    'order_id'        => $orderId,
+                    'payment_type'    => 'advance',
+                    'expected_amount' => $advanceAmount,
+                    'currency'        => 'LKR',
+                    'payment_method'  => 'payhere',
+                    'status'          => 'pending',
+                    'merchant_id'     => config('payhere.merchant_id'),
+                ]);
+            }
 
             return back()->with('success', 'Schedule accepted. Project is now confirmed.');
         } else {
             $survey->update([
                 'schedule_status' => 'declined',
-                'proposed_at' => null
+                'proposed_at'     => null,
             ]);
             return back()->with('warning', 'Schedule declined. Surveyor will propose a new time.');
         }
@@ -218,41 +263,83 @@ class SurveyController extends Controller
         \Illuminate\Support\Facades\DB::transaction(function () use ($request, $survey) {
             $paymentType = $request->type === 'advance' ? 'advance' : 'balance';
             $payment = \App\Models\Payment::where('survey_id', $survey->id)
-                ->where('type', $paymentType)
+                ->where('payment_type', $paymentType)
                 ->lockForUpdate()
                 ->first();
-                
-            if ($payment) {
-                $payment->update([
-                    'status' => $request->type === 'advance' ? 'AdvancePaid' : 'ActualPaid',
-                    'paid_at' => now()
-                ]);
-            }
+
+            $pricingService = app(\App\Services\PricingService::class);
+            $transitionService = app(\App\Services\SurveyTransitionService::class);
 
             if ($request->type === 'advance') {
+                $advanceAmount = $pricingService->getAdvanceAmount($survey->estimate_price);
+                if (!$payment) {
+                    $orderId = 'MANUAL-' . $survey->id . '-advance-' . time();
+                    $payment = \App\Models\Payment::create([
+                        'survey_id'       => $survey->id,
+                        'order_id'        => $orderId,
+                        'payment_type'    => 'advance',
+                        'expected_amount' => $advanceAmount,
+                        'paid_amount'     => $advanceAmount,
+                        'currency'        => 'LKR',
+                        'payment_method'  => 'cash',
+                        'status'          => 'completed',
+                    ]);
+                } else {
+                    $payment->update([
+                        'status'      => 'completed',
+                        'paid_amount' => $payment->expected_amount,
+                    ]);
+                }
+
                 $survey->update([
                     'payment_status'  => 'advance_paid',
                     'advance_paid_at' => now(),
-                    'status'          => 'AdvancePaid'
+                    'balance_amount'  => $pricingService->calculateRemainingBalance($survey),
                 ]);
-                $survey->update([
-                    'balance_amount' => $this->pricingService->calculateRemainingBalance($survey)
-                ]);
-                
-                // Create pending balance payment
+
+                $transitionService->transition($survey, \App\Enums\SurveyStatus::ADVANCE_PAID);
+
+                // Pre-generate pending balance payment record
+                $balanceOrderId = 'SS-' . $survey->id . '-balance-' . time();
                 \App\Models\Payment::firstOrCreate([
-                    'survey_id' => $survey->id,
-                    'type' => 'balance',
-                    'status' => 'pending'
+                    'survey_id'    => $survey->id,
+                    'payment_type' => 'balance',
+                    'status'       => 'pending',
                 ], [
-                    'amount' => $survey->balance_amount
+                    'order_id'        => $balanceOrderId,
+                    'expected_amount' => $survey->balance_amount,
+                    'currency'        => 'LKR',
+                    'payment_method'  => 'payhere',
+                    'merchant_id'     => config('payhere.merchant_id'),
                 ]);
             } else {
+                $balanceAmount = $pricingService->calculateRemainingBalance($survey);
+                if (!$payment) {
+                    $orderId = 'MANUAL-' . $survey->id . '-balance-' . time();
+                    $payment = \App\Models\Payment::create([
+                        'survey_id'       => $survey->id,
+                        'order_id'        => $orderId,
+                        'payment_type'    => 'balance',
+                        'expected_amount' => $balanceAmount,
+                        'paid_amount'     => $balanceAmount,
+                        'currency'        => 'LKR',
+                        'payment_method'  => 'cash',
+                        'status'          => 'completed',
+                    ]);
+                } else {
+                    $payment->update([
+                        'status'      => 'completed',
+                        'paid_amount' => $payment->expected_amount,
+                    ]);
+                }
+
                 $survey->update([
                     'payment_status' => 'fully_paid',
-                    'final_paid_at' => now(),
-                    'status' => 'ActualPaid'
+                    'final_paid_at'  => now(),
+                    'balance_amount' => 0.0,
                 ]);
+
+                $transitionService->transition($survey, \App\Enums\SurveyStatus::ACTUAL_PAID);
             }
         });
 
@@ -273,8 +360,26 @@ class SurveyController extends Controller
             ->withCount('surveys')
             ->orderBy('created_at', 'desc')
             ->paginate(15);
+
+        $pendingSurveyors = User::where('role', 'admin')
+            ->where('is_approved', false)
+            ->orderBy('created_at', 'desc')
+            ->get();
             
-        return view('admin.clients', compact('clients'));
+        return view('admin.clients', compact('clients', 'pendingSurveyors'));
+    }
+
+    public function approveSurveyor(User $user)
+    {
+        $user->update(['is_approved' => true]);
+        return back()->with('success', "Surveyor {$user->name} (License: {$user->license_number}) has been approved successfully.");
+    }
+
+    public function rejectSurveyor(User $user)
+    {
+        $userName = $user->name;
+        $user->delete();
+        return back()->with('success', "Surveyor application for {$userName} has been rejected.");
     }
 
     public function adminDeeds(Request $request)
@@ -316,20 +421,51 @@ class SurveyController extends Controller
 
     public function checkWeather(Request $request)
     {
-        $lat = $request->lat;
-        $lng = $request->lng;
-        $date = $request->date; // YYYY-MM-DDTHH:ii format
+        $lat = (float) $request->lat;
+        $lng = (float) $request->lng;
+        $date = $request->date;
 
         if (!$lat || !$lng) {
             return response()->json(['error' => 'Coordinates missing'], 400);
         }
 
-        $weather = $this->weatherService->getWeather($lat, $lng, $date);
-        
+        if ($date) {
+            $weather = $this->weatherService->getWeatherForDate($lat, $lng, $date);
+            return response()->json($weather);
+        }
+
+        $weather = $this->weatherService->getWeather($lat, $lng);
         if ($weather) {
             return response()->json($weather);
         }
 
         return response()->json(['error' => 'Could not fetch weather'], 500);
+    }
+
+    public function weatherForecast(Request $request, Survey $survey)
+    {
+        $lat = (float) ($survey->location_lat ?? $request->lat ?? 7.2906);
+        $lng = (float) ($survey->location_lng ?? $request->lng ?? 80.6337);
+
+        $forecast = $this->weatherService->getDailyForecast($lat, $lng);
+
+        if (!empty($forecast['error'])) {
+            return response()->json([
+                'error' => true,
+                'message' => $forecast['message'] ?? 'Could not fetch weather forecast',
+            ], 503);
+        }
+
+        if (!empty($forecast['per_day'])) {
+            foreach ($forecast['per_day'] as &$day) {
+                $code = $day['weather_code'] ?? 0;
+                $day['icon'] = $this->weatherService->getWeatherIcon($code);
+                $day['description'] = $this->weatherService->getWeatherDescription($code);
+                $day['is_recommended'] = in_array($day['date'], $forecast['best_days_in_order'] ?? [], true);
+            }
+        }
+
+        $forecast['disclaimer'] = 'Planning defaults, not legal regulations. Licensed surveyor makes the final visit decision.';
+        return response()->json($forecast);
     }
 }

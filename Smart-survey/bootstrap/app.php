@@ -14,6 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\SetLanguage::class,
         ]);
+        $middleware->validateCsrfTokens(except: [
+            'payhere/notify',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

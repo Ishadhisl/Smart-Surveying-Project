@@ -68,6 +68,17 @@
                         <div class="bg-white/5 border border-white/10 p-6 rounded-3xl text-center min-w-[200px]">
                             <div class="text-3xl font-black text-white">{{ $survey->proposed_at->format('M d') }}</div>
                             <div class="text-xs font-black text-deepteal uppercase tracking-widest mt-1">{{ $survey->proposed_at->format('h:i A') }}</div>
+                            @if(!empty($weather) && ($weather['status'] ?? '') === 'available')
+                                <div class="mt-3 pt-3 border-t border-white/10 flex items-center justify-center gap-2.5 text-left">
+                                    <span class="text-2xl drop-shadow">{{ $weather['icon'] ?? '⛅' }}</span>
+                                    <div>
+                                        <div class="text-xs font-black text-white leading-tight">{{ $weather['temp'] }}°C · {{ $weather['description'] }}</div>
+                                        <div class="text-[9px] font-bold {{ ($weather['risk'] ?? '') === 'High' ? 'text-rose-400' : (($weather['risk'] ?? '') === 'Medium' ? 'text-amber-400' : 'text-emerald-400') }}">
+                                            Field Risk: {{ $weather['risk'] }} · 💧 {{ $weather['precipitation_sum'] }}mm
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                         <div class="flex gap-4">
                             <form action="{{ route('survey.respond', $survey) }}" method="POST">
